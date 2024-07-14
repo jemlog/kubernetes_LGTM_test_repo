@@ -1,0 +1,72 @@
+---
+spring:
+  application:
+    name: order-service
+  config:
+    activate:
+      on-profile: default
+  #로컬 환경에서는 Spring Cloud Kubernetes를 사용하지 않는다
+  cloud:
+    kubernetes:
+      config:
+        enabled: false
+
+#로컬 환경에서는 eureka client를 사용한다
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+    leaseRenewalIntervalInSeconds: 10
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
+---
+
+spring:
+  application:
+    name: order-service
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    kubernetes:
+      discovery:
+        all-namespaces: true #모든 네임스페이스에서 활성화
+
+# 개발 환경에서는 eureka client를 비활성화한다
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://opentelemetry-collector-service:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"

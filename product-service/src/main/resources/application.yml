@@ -1,0 +1,72 @@
+---
+spring:
+  application:
+    name: product-service
+  config:
+    activate:
+      on-profile: default
+  #?? ????? Spring Cloud Kubernetes? ???? ???
+  cloud:
+    kubernetes:
+      config:
+        enabled: false
+
+#?? ????? eureka client? ????
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+    leaseRenewalIntervalInSeconds: 10
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://opentelemetry-collector-service:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
+---
+
+spring:
+  application:
+    name: product-service
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    kubernetes:
+      discovery:
+        all-namespaces: true #?? ???????? ???
+
+# ?? ????? eureka client? ??????
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://opentelemetry-collector-service:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
